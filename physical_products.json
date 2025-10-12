@@ -1,9 +1,11 @@
 [
   {
-    "base_id": "chibi-hero-shirt",
+    "base_id": "chibiheroshirt",
     "base_name": "Chibi Hero T-Shirt",
-    "description": "A comfortable, high-quality t-shirt featuring your favorite chibi hero. Available in multiple sizes.",
-    "base_image": "https://placehold.co/400x400/1a1a1a/ffffff?text=T-Shirt",
+    "description": "A comfortable, high-quality t-shirt featuring your favorite chibi hero. Made in the USA by Teelaunch and shipped with tracking.",
+    "base_image": "https://placehold.co/600x600/1a1a1a/ffffff?text=T-Shirt",
+    "display_style": "buttons",
+    "option_name": "Size",
     "taxable": true,
     "shipping_required": true,
     "variants": [
@@ -11,114 +13,35 @@
         "id": 601,
         "name": "Chibi Hero T-Shirt (Small)",
         "sku": "CH-TEE-S",
-        "price": 2500,
+        "price": 3000,
         "weight_grams": 150,
-        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
+        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID_SMALL",
         "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=S",
-        "type": "physical"
+        "type": "physical",
+        "option_label": "Small"
       },
       {
         "id": 602,
         "name": "Chibi Hero T-Shirt (Medium)",
         "sku": "CH-TEE-M",
-        "price": 2500,
+        "price": 3000,
         "weight_grams": 170,
-        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
+        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID_MEDIUM",
         "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=M",
-        "type": "physical"
+        "type": "physical",
+        "option_label": "Medium"
       },
       {
         "id": 603,
         "name": "Chibi Hero T-Shirt (Large)",
         "sku": "CH-TEE-L",
-        "price": 2500,
+        "price": 3000,
         "weight_grams": 190,
-        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
+        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID_LARGE",
         "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=L",
-        "type": "physical"
-      }
-    ]
-  },
-  {
-    "base_id": "artist-logo-hoodie",
-    "base_name": "Artist Logo Hoodie",
-    "description": "Stay warm and stylish with this premium hoodie featuring the official artist logo.",
-    "base_image": "https://placehold.co/400x400/1a1a1a/ffffff?text=Hoodie",
-    "taxable": true,
-    "shipping_required": true,
-    "variants": [
-      {
-        "id": 701,
-        "name": "Artist Logo Hoodie (Medium)",
-        "sku": "LOGO-HOOD-M",
-        "price": 5500,
-        "weight_grams": 450,
-        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
-        "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=M",
-        "type": "physical"
-      },
-      {
-        "id": 702,
-        "name": "Artist Logo Hoodie (Large)",
-        "sku": "LOGO-HOOD-L",
-        "price": 5500,
-        "weight_grams": 500,
-        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
-        "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=L",
-        "type": "physical"
-      },
-      {
-        "id": 703,
-        "name": "Artist Logo Hoodie (X-Large)",
-        "sku": "LOGO-HOOD-XL",
-        "price": 5500,
-        "weight_grams": 550,
-        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
-        "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=XL",
-        "type": "physical"
-      }
-    ]
-  },
-  {
-    "base_id": "chibi-sticker-pack",
-    "base_name": "Chibi Sticker Pack",
-    "description": "A pack of 5 high-quality, weatherproof vinyl stickers.",
-    "base_image": "https://placehold.co/400x400/1a1a1a/ffffff?text=Stickers",
-    "taxable": true,
-    "shipping_required": true,
-    "variants": [
-       {
-        "id": 801,
-        "name": "Chibi Sticker Pack (5-Pack)",
-        "sku": "CHIBI-STICK-5",
-        "price": 1200,
-        "weight_grams": 25,
-        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
-        "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=5-Pack",
-        "type": "physical"
-      }
-    ]
-  },
-    {
-    "base_id": "gaming-desk-mat",
-    "base_name": "Fantasy Landscape Desk Mat",
-    "description": "A large, premium desk mat perfect for gaming or work, featuring a vibrant fantasy landscape.",
-    "base_image": "https://placehold.co/400x400/1a1a1a/ffffff?text=Desk+Mat",
-    "taxable": true,
-    "shipping_required": true,
-    "variants": [
-       {
-        "id": 901,
-        "name": "Fantasy Landscape Desk Mat",
-        "sku": "DESKMAT-FNTY",
-        "price": 3500,
-        "weight_grams": 700,
-        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
-        "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=Desk+Mat",
-        "type": "physical"
+        "type": "physical",
+        "option_label": "Large"
       }
     ]
   }
 ]
-
-
