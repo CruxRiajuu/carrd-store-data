@@ -12,6 +12,7 @@
         "name": "Chibi Hero T-Shirt (Small)",
         "sku": "CH-TEE-S",
         "price": 2500,
+        "weight_grams": 150,
         "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
         "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=S",
         "type": "physical"
@@ -21,6 +22,7 @@
         "name": "Chibi Hero T-Shirt (Medium)",
         "sku": "CH-TEE-M",
         "price": 2500,
+        "weight_grams": 170,
         "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
         "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=M",
         "type": "physical"
@@ -30,6 +32,7 @@
         "name": "Chibi Hero T-Shirt (Large)",
         "sku": "CH-TEE-L",
         "price": 2500,
+        "weight_grams": 190,
         "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
         "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=L",
         "type": "physical"
@@ -49,6 +52,7 @@
         "name": "Artist Logo Hoodie (Medium)",
         "sku": "LOGO-HOOD-M",
         "price": 5500,
+        "weight_grams": 450,
         "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
         "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=M",
         "type": "physical"
@@ -58,6 +62,7 @@
         "name": "Artist Logo Hoodie (Large)",
         "sku": "LOGO-HOOD-L",
         "price": 5500,
+        "weight_grams": 500,
         "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
         "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=L",
         "type": "physical"
@@ -67,6 +72,7 @@
         "name": "Artist Logo Hoodie (X-Large)",
         "sku": "LOGO-HOOD-XL",
         "price": 5500,
+        "weight_grams": 550,
         "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
         "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=XL",
         "type": "physical"
@@ -86,6 +92,7 @@
         "name": "Chibi Sticker Pack (5-Pack)",
         "sku": "CHIBI-STICK-5",
         "price": 1200,
+        "weight_grams": 25,
         "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
         "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=5-Pack",
         "type": "physical"
@@ -105,6 +112,7 @@
         "name": "Fantasy Landscape Desk Mat",
         "sku": "DESKMAT-FNTY",
         "price": 3500,
+        "weight_grams": 700,
         "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID",
         "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=Desk+Mat",
         "type": "physical"
@@ -112,3 +120,5 @@
     ]
   }
 ]
+
+
