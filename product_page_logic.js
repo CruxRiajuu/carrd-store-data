@@ -1,4 +1,4 @@
-// This is the entire content of product_page_logic.js (FINAL, CORRECTED VERSION)
+// This is the ENTIRE content of product_page_logic.js (FINAL, ROBUST VERSION)
 
 function initializeProductPage() {
     const DIGITAL_PRODUCTS_URL = `https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/digital_products_heirarchy.json`;
@@ -10,15 +10,12 @@ function initializeProductPage() {
     const pageMapping = { 'digitalart': 'artcommission', 'animation': 'animationcommission', 'vtubermodeling': 'vtubercommission', 'videoediting': 'videoediting', 'streamkit': 'streamkit', 'logodesign': 'logodesign', 'webdesign': 'webdesign', 'physicalworks': 'cruxbrandshirt', 'cruxbrandshirt': 'cruxbrandshirt' };
 
     const formatPrice = (price) => (price / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
-    
     const renderDiagnostic = (message) => {
-        if(container) container.innerHTML = `<div class="diagnostic-output">--- DIAGNOSTIC ---<br>${message}</div>`;
-        // THE FIX: Tell the Universal Tagger to update the layout even if there's an error
-        window.dispatchEvent(new Event('fixed_elements_update'));
+        if(container) {
+            container.innerHTML = `<div class="diagnostic-output">${message}</div>`;
+            window.dispatchEvent(new Event('fixed_elements_update'));
+        }
     };
-    
-    // This function is no longer needed here, as the Universal Tagger will handle all positioning.
-    // const positionWrapper = () => { ... };
 
     window.addSelectedVariantToCart_universal = () => {
         if (typeof window.addToCart !== 'function') return alert("Error: Main cart system not found.");
@@ -121,13 +118,15 @@ function initializeProductPage() {
 
     async function initializePage() {
         if (!container) return;
-        container.innerHTML = `<p style="color: #ccc; font-family: monospace; text-align: center; padding: 3rem 0;">Initializing...</p>`;
-        // Don't position yet, wait for content
+        container.innerHTML = `<p style="color: #ccc; font-family: monospace; text-align: center; padding: 3rem 0;">1/5: Initializing...</p>`;
+        positionWrapper();
         try {
+            container.innerHTML = `<p style="color: #ccc; font-family: monospace; text-align: center; padding: 3rem 0;">2/5: Fetching digital products...</p>`;
             const digitalResponse = await fetch(DIGITAL_PRODUCTS_URL + '?t=' + new Date().getTime());
             if (!digitalResponse.ok) throw new Error(`Digital Products fetch failed (Status: ${digitalResponse.status})`);
             const digitalProducts = await digitalResponse.json();
             
+            container.innerHTML = `<p style="color: #ccc; font-family: monospace; text-align: center; padding: 3rem 0;">3/5: Fetching physical products...</p>`;
             let physicalProducts = [];
             try {
                 const masterResponse = await fetch(PHYSICAL_PRODUCTS_MASTER_URL + '?t=' + new Date().getTime());
@@ -146,23 +145,26 @@ function initializeProductPage() {
             
             allBaseProducts = [...digitalProducts, ...physicalProducts];
             
+            container.innerHTML = `<p style="color: #ccc; font-family: monospace; text-align: center; padding: 3rem 0;">4/5: Finding product in catalog...</p>`;
             const pageHash = window.location.hash.substring(1).toLowerCase().replace(/-/g, '');
             if (!pageHash) return renderDiagnostic("PAGE LINK NOT SET.<br>Set this section's 'On-page link' in Carrd (e.g., '#digitalart').");
             
             const productIdToLoad = pageMapping[pageHash] || pageHash;
             const productToDisplay = allBaseProducts.find(p => p && p.base_id && p.base_id.toLowerCase() === productIdToLoad);
 
+            container.innerHTML = `<p style="color: #ccc; font-family: monospace; text-align: center; padding: 3rem 0;">5/5: Building page...</p>`;
             if (productToDisplay) { renderProduct(productToDisplay); }
             else { renderDiagnostic(`PRODUCT NOT FOUND.<br>Could not find product with base_id: "${productIdToLoad}" (mapped from '#${pageHash}').`); }
         } catch (error) {
             renderDiagnostic(`CRITICAL ERROR: ${error.message}<br>Check your JSON file URLs and ensure your GitHub repo is public.`);
         } finally {
-            // THE FIX: Tell the Universal Tagger that new content has been added and it needs to recalculate the layout.
             window.dispatchEvent(new Event('fixed_elements_update'));
         }
     }
 
     window.addEventListener('hashchange', () => setTimeout(initializePage, 50));
     initializePage();
-});
+}
+
+document.addEventListener('DOMContentLoaded', initializeProductPage);
 </script>
