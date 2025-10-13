@@ -3,45 +3,42 @@
     "base_id": "chibiheroshirt",
     "base_name": "Chibi Hero T-Shirt",
     "description": "A comfortable, high-quality t-shirt featuring your favorite chibi hero. Made in the USA by Teelaunch and shipped with tracking.",
-    "base_image": "https://placehold.co/600x600/1a1a1a/ffffff?text=T-Shirt",
+    "base_image": "https://i.imgur.com/K59fz6W.jpg",
     "display_style": "buttons",
     "option_name": "Size",
     "taxable": true,
     "shipping_required": true,
     "variants": [
-      {
-        "id": 601,
-        "name": "Chibi Hero T-Shirt (Small)",
-        "sku": "CH-TEE-S",
-        "price": 3000,
-        "weight_grams": 150,
-        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID_SMALL",
-        "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=S",
-        "type": "physical",
-        "option_label": "Small"
-      },
-      {
-        "id": 602,
-        "name": "Chibi Hero T-Shirt (Medium)",
-        "sku": "CH-TEE-M",
-        "price": 3000,
-        "weight_grams": 170,
-        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID_MEDIUM",
-        "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=M",
-        "type": "physical",
-        "option_label": "Medium"
-      },
-      {
-        "id": 603,
-        "name": "Chibi Hero T-Shirt (Large)",
-        "sku": "CH-TEE-L",
-        "price": 3000,
-        "weight_grams": 190,
-        "stripe_price_id": "price_REPLACE_WITH_YOUR_STRIPE_ID_LARGE",
-        "image": "https://placehold.co/100x100/1a1a1a/ffffff?text=L",
-        "type": "physical",
-        "option_label": "Large"
-      }
+      { "id": 601, "name": "Chibi Hero T-Shirt (Small)", "price": 3000, "shipping_units": 5, "stripe_price_id": "price_REPLACE_THIS_ID", "type": "physical", "option_label": "Small" },
+      { "id": 602, "name": "Chibi Hero T-Shirt (Medium)", "price": 3000, "shipping_units": 5, "stripe_price_id": "price_REPLACE_THIS_ID", "type": "physical", "option_label": "Medium" },
+      { "id": 603, "name": "Chibi Hero T-Shirt (Large)", "price": 3000, "shipping_units": 5, "stripe_price_id": "price_REPLACE_THIS_ID", "type": "physical", "option_label": "Large" }
+    ]
+  },
+  {
+    "base_id": "artistlogohoodie",
+    "base_name": "Artist Logo Hoodie",
+    "description": "A premium, ultra-soft hoodie with a minimalist embroidered logo. The perfect way to stay cozy and support the artist.",
+    "base_image": "https://i.imgur.com/PSvIweG.jpg",
+    "display_style": "buttons",
+    "option_name": "Size",
+    "taxable": true,
+    "shipping_required": true,
+    "variants": [
+      { "id": 701, "name": "Artist Logo Hoodie (Medium)", "price": 5500, "shipping_units": 10, "stripe_price_id": "price_REPLACE_THIS_ID", "type": "physical", "option_label": "Medium" },
+      { "id": 702, "name": "Artist Logo Hoodie (Large)", "price": 5500, "shipping_units": 10, "stripe_price_id": "price_REPLACE_THIS_ID", "type": "physical", "option_label": "Large" },
+      { "id": 703, "name": "Artist Logo Hoodie (XL)", "price": 5500, "shipping_units": 10, "stripe_price_id": "price_REPLACE_THIS_ID", "type": "physical", "option_label": "XL" }
+    ]
+  },
+  {
+    "base_id": "chibiherosticker",
+    "base_name": "Chibi Hero Sticker",
+    "description": "A durable, high-quality vinyl sticker perfect for laptops, water bottles, and more.",
+    "base_image": "https://i.imgur.com/YyfAQwZ.jpg",
+    "display_style": "buttons",
+    "taxable": true,
+    "shipping_required": true,
+    "variants": [
+      { "id": 801, "name": "Chibi Hero Sticker", "price": 500, "shipping_units": 1, "stripe_price_id": "price_REPLACE_THIS_ID", "type": "physical", "option_label": "Standard" }
     ]
   }
 ]
