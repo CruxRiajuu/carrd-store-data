@@ -1,4 +1,4 @@
-// This is the ENTIRE content of product_page_logic.js (FINAL, ROBUST VERSION)
+// This is the entire content of product_page_logic.js (FINAL, ROBUST VERSION)
 
 function initializeProductPage() {
     const DIGITAL_PRODUCTS_URL = `https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/digital_products_heirarchy.json`;
@@ -12,7 +12,7 @@ function initializeProductPage() {
     const formatPrice = (price) => (price / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
     const renderDiagnostic = (message) => {
         if(container) {
-            container.innerHTML = `<div class="diagnostic-output">${message}</div>`;
+            container.innerHTML = `<div class="diagnostic-output" style="opacity: 1; transform: none;">--- DIAGNOSTIC ---<br><br>${message}</div>`;
             window.dispatchEvent(new Event('fixed_elements_update'));
         }
     };
@@ -55,12 +55,8 @@ function initializeProductPage() {
                     setTimeout(() => { imageEl.src = productData.options[selectedColor].image; imageEl.style.opacity = 1; }, 300);
                 }
             } else if (imageEl && imageEl.src !== productData.base_image) {
-                 if(imageEl.src) {
-                    imageEl.style.opacity = 0;
-                    setTimeout(() => { imageEl.src = productData.base_image; imageEl.style.opacity = 1; }, 300);
-                 } else {
-                     imageEl.src = productData.base_image;
-                 }
+                 if(imageEl.src) { imageEl.style.opacity = 0; setTimeout(() => { imageEl.src = productData.base_image; imageEl.style.opacity = 1; }, 300); }
+                 else { imageEl.src = productData.base_image; }
             }
             for (let i = 1; i < config.length; i++) {
                 const prevSelection = selections[i - 1];
@@ -117,9 +113,13 @@ function initializeProductPage() {
     };
 
     async function initializePage() {
-        if (!container) return;
+        if (!container) {
+            console.error("CRITICAL: #single-product-container not found in DOM.");
+            return;
+        }
         container.innerHTML = `<p style="color: #ccc; font-family: monospace; text-align: center; padding: 3rem 0;">1/5: Initializing...</p>`;
         positionWrapper();
+        
         try {
             container.innerHTML = `<p style="color: #ccc; font-family: monospace; text-align: center; padding: 3rem 0;">2/5: Fetching digital products...</p>`;
             const digitalResponse = await fetch(DIGITAL_PRODUCTS_URL + '?t=' + new Date().getTime());
@@ -154,7 +154,8 @@ function initializeProductPage() {
 
             container.innerHTML = `<p style="color: #ccc; font-family: monospace; text-align: center; padding: 3rem 0;">5/5: Building page...</p>`;
             if (productToDisplay) { renderProduct(productToDisplay); }
-            else { renderDiagnostic(`PRODUCT NOT FOUND.<br>Could not find product with base_id: "${productIdToLoad}" (mapped from '#${pageHash}').`); }
+            else { renderDiagnostic(`PRODUCT NOT FOUND.<br>Could not find a product with base_id: "${productIdToLoad}" (mapped from '#${pageHash}').`); }
+        
         } catch (error) {
             renderDiagnostic(`CRITICAL ERROR: ${error.message}<br>Check your JSON file URLs and ensure your GitHub repo is public.`);
         } finally {
@@ -166,5 +167,8 @@ function initializeProductPage() {
     initializePage();
 }
 
-document.addEventListener('DOMContentLoaded', initializeProductPage);
+// Check if the script is already running to avoid duplicates
+if (typeof window.initializeProductPage === 'undefined') {
+    document.addEventListener('DOMContentLoaded', initializeProductPage);
+}
 </script>
