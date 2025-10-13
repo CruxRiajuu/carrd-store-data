@@ -1,4 +1,4 @@
-// FINAL, COMPLETE, ROBUST product_page_logic.js
+// FINAL, COMPLETE, ROBUST product_page_logic.js - Built for 3-Level Modular Loading
 
 function initializeProductPage() {
     const DIGITAL_PRODUCTS_URL = `https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/digital_products_heirarchy.json`;
@@ -6,28 +6,63 @@ function initializeProductPage() {
     const container = document.getElementById('single-product-container');
     const wrapper = document.getElementById('single-product-wrapper');
     let allBaseProducts = [];
-    const pageMapping = { 'digitalart': 'artcommission', 'animation': 'animationcommission', 'vtubermodeling': 'vtubercommission', 'videoediting': 'videoediting', 'streamkit': 'streamkit', 'logodesign': 'logodesign', 'webdesign': 'webdesign', 'physicalworks': 'cruxbrandshirt', 'cruxbrandshirt': 'cruxbrandshirt' };
+
+    const pageMapping = {
+        'digitalart': 'artcommission', 'animation': 'animationcommission', 'vtubermodeling': 'vtubercommission',
+        'videoediting': 'videoediting', 'streamkit': 'streamkit', 'logodesign': 'logodesign', 'webdesign': 'webdesign',
+        'physicalworks': 'cruxbrandshirt', 'cruxbrandshirt': 'cruxbrandshirt'
+    };
+
     const formatPrice = (price) => (price / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
-    const renderDiagnostic = (message) => { if(container) { container.innerHTML = `<div class="diagnostic-output" style="opacity: 1; transform: none;">--- DIAGNOSTIC ---<br><br>${message}</div>`; window.dispatchEvent(new Event('fixed_elements_update')); } };
+    
+    const renderDiagnostic = (message) => {
+        if (container) {
+            container.innerHTML = `<div class="diagnostic-output" style="opacity: 1; transform: none;">--- DIAGNOSTIC ---<br><br>${message}</div>`;
+            window.dispatchEvent(new Event('fixed_elements_update'));
+        }
+    };
+
+    const positionWrapper = () => {
+        if (!wrapper) return;
+        let topOffset = 0;
+        document.querySelectorAll('[data-fixed-element]').forEach(el => {
+            if (el !== wrapper && !el.classList.contains('hidden')) {
+                topOffset += el.offsetHeight;
+            }
+        });
+        wrapper.style.marginTop = `${topOffset}px`;
+    };
+
     window.addSelectedVariantToCart_universal = () => {
         if (typeof window.addToCart !== 'function') return alert("Error: Main cart system not found.");
-        const productContainer = document.querySelector('.product-page-container'); if (!productContainer) return;
-        const baseId = productContainer.dataset.baseId; const productData = allBaseProducts.find(p => p.base_id === baseId); if (!productData) return;
+        const productContainer = document.querySelector('.product-page-container');
+        if (!productContainer) return;
+        const baseId = productContainer.dataset.baseId;
+        const productData = allBaseProducts.find(p => p.base_id === baseId);
+        if (!productData) return;
         let finalVariant;
         if (productData.options_config) {
             const selections = productData.options_config.map(opt => document.querySelector(`input[name="${opt.name.toLowerCase()}"]:checked`)?.value);
             if (selections.some(s => !s)) return alert("Please select all options.");
             let currentLevel = productData.options;
-            for (const selection of selections) { currentLevel = currentLevel?.[selection]?.variants || currentLevel?.[selection]; }
+            for (const selection of selections) {
+                currentLevel = currentLevel?.[selection]?.variants || currentLevel?.[selection];
+            }
             finalVariant = currentLevel;
         } else {
             const selectedRadio = document.querySelector(`input[name="variant_${baseId}"]:checked`);
             if (selectedRadio) finalVariant = productData.variants.find(v => v.id === parseInt(selectedRadio.value));
         }
-        if (finalVariant && finalVariant.id) { window.addToCart(finalVariant.id, 1); } else { alert("Please make a valid selection."); }
+        if (finalVariant && finalVariant.id) {
+            window.addToCart(finalVariant.id, 1);
+        } else {
+            alert("Please make a valid selection.");
+        }
     };
+    
     window.updateProductPage_universal = (baseId) => {
-        const productData = allBaseProducts.find(p => p.base_id === baseId); if (!productData) return;
+        const productData = allBaseProducts.find(p => p.base_id === baseId);
+        if (!productData) return;
         const priceDisplay = document.querySelector(`[data-base-id="${baseId}"] .price-display`);
         const titleEl = document.querySelector(`[data-base-id="${baseId}"] h1`);
         const imageEl = document.getElementById('product-image-container')?.querySelector('img');
@@ -41,31 +76,39 @@ function initializeProductPage() {
                     setTimeout(() => { imageEl.src = productData.options[selectedColor].image; imageEl.style.opacity = 1; }, 300);
                 }
             } else if (imageEl && imageEl.src !== productData.base_image) {
-                 if(imageEl.src) { imageEl.style.opacity = 0; setTimeout(() => { imageEl.src = productData.base_image; imageEl.style.opacity = 1; }, 300); } else { imageEl.src = productData.base_image; }
+                if(imageEl.src) { imageEl.style.opacity = 0; setTimeout(() => { imageEl.src = productData.base_image; imageEl.style.opacity = 1; }, 300); }
+                else { imageEl.src = productData.base_image; }
             }
             for (let i = 1; i < config.length; i++) {
                 const prevSelection = selections[i - 1];
-                const currentGroup = document.getElementById(`${config[i].name.toLowerCase()}-group`); if (!currentGroup) continue;
+                const currentGroup = document.getElementById(`${config[i].name.toLowerCase()}-group`);
+                if (!currentGroup) continue;
                 currentGroup.innerHTML = `<legend>${config[i].label}</legend>`;
                 if (!prevSelection) { currentGroup.classList.add('hidden-options'); }
                 else {
                     let path = productData.options[prevSelection]?.variants;
                     if (path && Object.keys(path).length > 0) {
-                        const nextOptions = Object.keys(path).sort(); let html = `<legend>${config[i].label}</legend>`;
+                        const nextOptions = Object.keys(path).sort();
+                        let html = `<legend>${config[i].label}</legend>`;
                         html += nextOptions.map(opt => `<input type="radio" id="${config[i].name.toLowerCase()}_${opt.replace(/\s+/g, '-')}" name="${config[i].name.toLowerCase()}" value="${opt}" onclick="updateProductPage_universal('${baseId}')"><label class="option-label" for="${config[i].name.toLowerCase()}_${opt.replace(/\s+/g, '-')}">${opt}</label>`).join('');
-                        currentGroup.innerHTML = html; currentGroup.classList.remove('hidden-options');
+                        currentGroup.innerHTML = html;
+                        currentGroup.classList.remove('hidden-options');
                     } else { currentGroup.classList.add('hidden-options'); }
                 }
             }
             let finalVariant, currentPath = productData.options, titleParts = [];
             for (const [index, selection] of selections.entries()) {
-                if (selection) { titleParts.push(selection); currentPath = (index < selections.length - 1) ? currentPath?.[selection]?.variants : currentPath?.[selection]; }
+                if (selection) {
+                    titleParts.push(selection);
+                    currentPath = (index < selections.length - 1) ? currentPath?.[selection]?.variants : currentPath?.[selection];
+                }
             }
             finalVariant = currentPath?.id ? currentPath : null;
             if (titleEl) titleEl.textContent = titleParts.length > 0 ? `${productData.base_name} (${titleParts.join(' / ')})` : productData.base_name;
             if (priceDisplay) priceDisplay.textContent = finalVariant ? formatPrice(finalVariant.price) : '---';
         } else {
-            const selectedRadio = document.querySelector(`input[name="variant_${baseId}"]:checked`); if (!selectedRadio) return;
+            const selectedRadio = document.querySelector(`input[name="variant_${baseId}"]:checked`);
+            if (!selectedRadio) return;
             const variant = productData.variants.find(v => v.id === parseInt(selectedRadio.value));
             if (variant) {
                 if (priceDisplay) priceDisplay.textContent = formatPrice(variant.price);
@@ -74,6 +117,7 @@ function initializeProductPage() {
             }
         }
     };
+
     const renderProduct = (product) => {
         let optionsHTML = '';
         if (product.options_config) {
@@ -88,6 +132,7 @@ function initializeProductPage() {
         container.innerHTML = `<div class="product-page-container" data-base-id="${product.base_id}"><div id="product-image-container"><img src="${product.base_image}" alt="${product.base_name}"></div><div class="product-details"><h1>${product.base_name}</h1><div class="price-display">---</div><p class="description">${product.description}</p><div class="options-container">${optionsHTML}</div><div class="button-wrapper"><div class="buynow-container"><a href="javascript:void(0);" onclick="addSelectedVariantToCart_universal()" class="buynow-button"><span class="buynow-text">Add to Cart</span></a></div><div class="buynow-container"><a href="javascript:void(0);" onclick="typeof openCartModal === 'function' ? openCartModal() : alert('Cart not loaded.')" class="buynow-button"><span class="buynow-text">View Cart</span></a></div></div></div></div>`;
         updateProductPage_universal(product.base_id);
     };
+
     async function initializePage() {
         if (!container) return;
         container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">1/5: Initializing...</p>`;
@@ -97,13 +142,14 @@ function initializeProductPage() {
             const digitalResponse = await fetch(`${DIGITAL_PRODUCTS_URL}?t=${new Date().getTime()}`);
             if (!digitalResponse.ok) throw new Error(`Digital Products fetch failed (Status: ${digitalResponse.status})`);
             const digitalProducts = await digitalResponse.json();
+            
             container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">3/5: Fetching physical products...</p>`;
             let physicalProducts = [];
             try {
                 const masterResponse = await fetch(`${PHYSICAL_PRODUCTS_MASTER_URL}?t=${new Date().getTime()}`);
                 if (masterResponse.ok) {
                     const masterData = await masterResponse.json();
-                    if (masterData.categories && Array.isArray(masterData.categories)) {
+                    if (masterData && masterData.categories && Array.isArray(masterData.categories)) {
                         const categoryPromises = masterData.categories.map(category => fetch(`${category.url}?t=${new Date().getTime()}`).then(res => res.ok ? res.json() : Promise.reject(new Error(`Failed to fetch category file: ${category.name}`))));
                         const categoryResults = await Promise.all(categoryPromises);
                         const productUrlArrays = categoryResults.map(cat => (cat.products || []).map(p => p.url));
@@ -113,22 +159,32 @@ function initializeProductPage() {
                     }
                 }
             } catch (error) { console.warn(`Could not process physical products:`, error); }
+            
             allBaseProducts = [...digitalProducts, ...physicalProducts];
+            
             container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">4/5: Finding product in catalog...</p>`;
             const pageHash = window.location.hash.substring(1).toLowerCase().replace(/-/g, '');
             if (!pageHash) return renderDiagnostic("PAGE LINK NOT SET.<br>Set this section's 'On-page link' in Carrd (e.g., '#digitalart').");
+            
             const productIdToLoad = pageMapping[pageHash] || pageHash;
             const productToDisplay = allBaseProducts.find(p => p && p.base_id && p.base_id.toLowerCase() === productIdToLoad);
+
             container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">5/5: Building page...</p>`;
             if (productToDisplay) { renderProduct(productToDisplay); } else { renderDiagnostic(`PRODUCT NOT FOUND.<br>Could not find product with base_id: "${productIdToLoad}" (mapped from '#${pageHash}').`); }
-        } catch (error) { renderDiagnostic(`CRITICAL ERROR: ${error.message}<br>Check JSON file URLs and ensure your GitHub repo is public.`); } finally { window.dispatchEvent(new Event('fixed_elements_update')); }
+        } catch (error) {
+            renderDiagnostic(`CRITICAL ERROR: ${error.message}<br>Check your JSON file URLs and ensure your GitHub repo is public.`);
+        } finally {
+            window.dispatchEvent(new Event('fixed_elements_update'));
+        }
     }
+
     if (typeof window.hasInitializedProductPage === 'undefined') {
         window.hasInitializedProductPage = true;
         window.addEventListener('hashchange', () => setTimeout(initializePage, 50));
         initializePage();
     }
 }
+
 if (typeof window.hasInitializedProductPage === 'undefined') {
     document.addEventListener('DOMContentLoaded', initializeProductPage);
 }
