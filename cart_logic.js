@@ -1,4 +1,4 @@
-// This is the entire content for cart_logic.js
+// This is the entire content for cart_logic.js (FINAL, CORRECTED VERSION)
 
 window.addEventListener('load', function () {
     const STRIPE_PUBLISHABLE_KEY = 'pk_live_51OHfwcIaRpVk2G5N78UiDGdQLFzmUh1dv6bbA0D4N4I5bK2n7mPruCL8YpY10RuhIImCOJka8aikchX9RAi017k100KJUWJMK7';
@@ -8,29 +8,38 @@ window.addEventListener('load', function () {
     let stripe, cart = [], allProducts = [], allBaseProducts = [];
     const cartModal = document.getElementById('cart-modal'), cartItemsContainer = document.getElementById('cart-items'), cartTotalEl = document.getElementById('cart-total'), emptyCartMessage = document.getElementById('empty-cart-message'), checkoutButton = document.getElementById('checkout-button'), notificationContainer = document.getElementById('notification-container');
 
+    // CORRECTED: This function now understands the complex, nested product structure.
     window.addToCart = function(productId, quantity = 1) {
-        if (allBaseProducts.length === 0) return alert("Error: Product list has not loaded yet. Please wait a moment.");
+        if (allBaseProducts.length === 0) return alert("Error: Product catalog is still loading. Please wait a moment.");
         
         let product;
+        // Search through all loaded base products to find the specific variant
         for (const baseProd of allBaseProducts) {
-            if (baseProd.options_config) { // Complex product
+            if (baseProd.options_config) { // Complex product with nested options (e.g., commissions, shirts)
                 for (const key1 in baseProd.options) {
                     const level1 = baseProd.options[key1];
-                    for (const key2 in level1.variants) {
-                        const variant = level1.variants[key2];
-                        if (variant.id === productId) {
-                            product = variant;
-                            break;
+                    // Check if variants are directly under level1 (digital) or nested inside level1.variants (physical)
+                    const variantsContainer = level1.variants || level1;
+                    for (const key2 in variantsContainer) {
+                        const level2 = variantsContainer[key2];
+                        if(level2.id === productId) { product = level2; break; }
+                        // Handle 3rd level nesting
+                        if(level2.variants) {
+                            for(const key3 in level2.variants) {
+                                const variant = level2.variants[key3];
+                                if(variant.id === productId) { product = variant; break; }
+                            }
                         }
+                        if(product) break;
                     }
                     if (product) break;
                 }
-            } else if (baseProd.variants) { // Simple product with variants
-                const variant = baseProd.variants.find(v => v.id === productId);
-                if (variant) {
-                    product = variant;
-                    break;
-                }
+            } else if (baseProd.variants) { // Simple product with one level of variants
+                 const variant = baseProd.variants.find(v => v.id === productId);
+                 if (variant) { product = variant; break; }
+            } else if (baseProd.id === productId) { // Product with no variants
+                 product = baseProd;
+                 break;
             }
             if (product) break;
         }
@@ -49,6 +58,7 @@ window.addEventListener('load', function () {
             renderCart();
             showNotification(product.name);
         } else {
+            console.error("addToCart failed: Could not find product with ID", productId, "in all loaded products:", allBaseProducts);
             alert(`Error: Could not find product with ID ${productId} to add to cart.`);
         }
     };
@@ -79,11 +89,13 @@ window.addEventListener('load', function () {
 
     window.closeCartModal = function() {
         const cartContainer = document.getElementById('cart-container');
-        cartContainer.style.transform = "scale(0.95)";
-        setTimeout(() => {
-            cartModal.classList.add('hidden');
-            cartContainer.style.transform = "";
-        }, 300);
+        if (cartContainer) {
+            cartContainer.style.transform = "scale(0.95)";
+            setTimeout(() => {
+                cartModal.classList.add('hidden');
+                cartContainer.style.transform = "";
+            }, 300);
+        }
     };
 
     window.goToCheckout = async function() {
@@ -118,28 +130,16 @@ window.addEventListener('load', function () {
             };
 
             const shippingRates = {
-                us: {
-                    light:  'shr_1SHg5LIaRpVk2G5NK0J6IZiL',
-                    medium: 'shr_1SHg80IaRpVk2G5N6cOWkq8u',
-                    heavy:  'shr_1SHgABIaRpVk2G5NRdOw6cws'
-                },
-                ca: {
-                    light:  'shr_1SHggPIaRpVk2G5NbAVunc74',
-                    medium: 'shr_1SHgkTIaRpVk2G5NIG9u1SeB',
-                    heavy:  'shr_1SHgm7IaRpVk2G5NawYaj2xe'
-                }
+                us: { light: 'shr_1SHg5LIaRpVk2G5NK0J6IZiL', medium: 'shr_1SHg80IaRpVk2G5N6cOWkq8u', heavy: 'shr_1SHgABIaRpVk2G5NRdOw6cws' },
+                ca: { light: 'shr_1SHggPIaRpVk2G5NbAVunc74', medium: 'shr_1SHgkTIaRpVk2G5NIG9u1SeB', heavy: 'shr_1SHgm7IaRpVk2G5NawYaj2xe' }
             };
 
             checkoutOptions.shipping_options = [];
             for (const country in shippingRates) {
                 let tier;
-                if (totalShippingUnits <= 4) {
-                    tier = 'light';
-                } else if (totalShippingUnits <= 15) {
-                    tier = 'medium';
-                } else {
-                    tier = 'heavy';
-                }
+                if (totalShippingUnits <= 4) { tier = 'light'; }
+                else if (totalShippingUnits <= 15) { tier = 'medium'; }
+                else { tier = 'heavy'; }
                 checkoutOptions.shipping_options.push({ shipping_rate: shippingRates[country][tier] });
             }
         }
@@ -149,12 +149,8 @@ window.addEventListener('load', function () {
                 checkoutButton.disabled = true;
                 checkoutButton.querySelector('.checkout-text').textContent = "Redirecting...";
             }
-            
             const { error } = await stripe.redirectToCheckout(checkoutOptions);
-            
-            if (error) {
-                throw new Error(error.message);
-            }
+            if (error) throw new Error(error.message);
         } catch (err) {
             alert(`Checkout Error: ${err.message}`);
             if (checkoutButton) {
@@ -195,10 +191,7 @@ window.addEventListener('load', function () {
                 const imageHtml = item.image ? `<img src="${item.image}" alt="${item.name}">` : '';
                 itemEl.innerHTML = `
                     <div class="cart-item-info">${imageHtml}<div class="cart-item-details"><p>${item.name}</p><p>${formatPrice(item.price)}</p></div></div>
-                    <div class="cart-item-quantity">
-                        <input type="number" value="${item.quantity}" min="0" onchange="updateQuantity(${item.id}, parseInt(this.value))">
-                        <button class="cart-item-remove" onclick="removeFromCart(${item.id})"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                    </div>`;
+                    <div class="cart-item-quantity"><input type="number" value="${item.quantity}" min="0" onchange="updateQuantity(${item.id}, parseInt(this.value))"><button class="cart-item-remove" onclick="removeFromCart(${item.id})"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`;
                 cartItemsContainer.appendChild(itemEl);
             });
         }
@@ -216,6 +209,7 @@ window.addEventListener('load', function () {
         }
     }
 
+    // CORRECTED: This function now populates the global `allBaseProducts` array that `addToCart` needs.
     async function initializeStore() {
         try {
             stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
