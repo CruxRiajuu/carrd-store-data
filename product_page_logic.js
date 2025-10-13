@@ -1,14 +1,62 @@
-// FINAL, COMPLETE, ROBUST product_page_logic.js - CORRECTED INITIALIZATION
+// FINAL, COMPLETE, ROBUST product_page_logic.js - CORRECTED POSITIONING & DIAGNOSTICS
+
 (function() {
+    // This immediately-invoked function ensures the script runs as soon as it's loaded.
+
     const DIGITAL_PRODUCTS_URL = `https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/digital_products_heirarchy.json`;
-    const PHYSICAL_PRODUCTS_URL = `https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/physical_products.json`;
+    const PHYSICAL_PRODUCTS_MASTER_URL = `https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/physical_products.json`;
     const container = document.getElementById('single-product-container');
     const wrapper = document.getElementById('single-product-wrapper');
     let allBaseProducts = [];
+
     const pageMapping = { 'digitalart': 'artcommission', 'animation': 'animationcommission', 'vtubermodeling': 'vtubercommission', 'videoediting': 'videoediting', 'streamkit': 'streamkit', 'logodesign': 'logodesign', 'webdesign': 'webdesign', 'physicalworks': 'cruxbrandshirt', 'cruxbrandshirt': 'cruxbrandshirt' };
+
     const formatPrice = (price) => (price / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
-    const renderDiagnostic = (message) => { if (container) { container.innerHTML = `<div class="diagnostic-output">${message}</div>`; window.dispatchEvent(new Event('fixed_elements_update')); } };
-    window.addSelectedVariantToCart_universal = () => { if (typeof window.addToCart !== 'function') return alert("Error: Main cart system not found."); const productContainer = document.querySelector('.product-page-container'); if (!productContainer) return; const baseId = productContainer.dataset.baseId; const productData = allBaseProducts.find(p => p.base_id === baseId); if (!productData) return; let finalVariant; if (productData.options_config) { const selections = productData.options_config.map(opt => document.querySelector(`input[name="${opt.name.toLowerCase()}"]:checked`)?.value); if (selections.some(s => !s)) return alert("Please select all options."); let currentLevel = productData.options; for (const selection of selections) { currentLevel = currentLevel?.[selection]?.variants || currentLevel?.[selection]; } finalVariant = currentLevel; } else { const selectedRadio = document.querySelector(`input[name="variant_${baseId}"]:checked`); if (selectedRadio) finalVariant = productData.variants.find(v => v.id === parseInt(selectedRadio.value)); } if (finalVariant && finalVariant.id) { window.addToCart(finalVariant.id, 1); } else { alert("Please make a valid selection."); } };
+    
+    const renderDiagnostic = (message) => {
+        if(container) {
+            container.innerHTML = `<div class="diagnostic-output" style="opacity: 1; transform: none;">--- DIAGNOSTIC ---<br><br>${message}</div>`;
+            // This event is crucial to tell your layout script to re-calculate positioning
+            window.dispatchEvent(new Event('fixed_elements_update'));
+        }
+    };
+    
+    // THIS IS THE CORRECTED POSITIONING LOGIC
+    const positionWrapper = () => {
+        if (!wrapper) return;
+        let topOffset = 0;
+        // It now ONLY looks for your specific nav bars and ignores all other fixed elements.
+        const navBars = document.querySelectorAll('.top-bar-nav, .ff7-nav-bar, #reduce-motion-container');
+        navBars.forEach(el => {
+            if (el && !el.classList.contains('hidden')) {
+                const rect = el.getBoundingClientRect();
+                // We only care about elements actually at the top of the viewport
+                if (rect.top >= 0 && rect.top < 100) { 
+                    topOffset += rect.height;
+                }
+            }
+        });
+        wrapper.style.paddingTop = `${topOffset}px`;
+    };
+
+    window.addSelectedVariantToCart_universal = () => {
+        if (typeof window.addToCart !== 'function') return alert("Error: Main cart system not found.");
+        const productContainer = document.querySelector('.product-page-container'); if (!productContainer) return;
+        const baseId = productContainer.dataset.baseId; const productData = allBaseProducts.find(p => p.base_id === baseId); if (!productData) return;
+        let finalVariant;
+        if (productData.options_config) {
+            const selections = productData.options_config.map(opt => document.querySelector(`input[name="${opt.name.toLowerCase()}"]:checked`)?.value);
+            if (selections.some(s => !s)) return alert("Please select all options.");
+            let currentLevel = productData.options;
+            for (const selection of selections) { currentLevel = currentLevel?.[selection]?.variants || currentLevel?.[selection]; }
+            finalVariant = currentLevel;
+        } else {
+            const selectedRadio = document.querySelector(`input[name="variant_${baseId}"]:checked`);
+            if (selectedRadio) finalVariant = productData.variants.find(v => v.id === parseInt(selectedRadio.value));
+        }
+        if (finalVariant && finalVariant.id) { window.addToCart(finalVariant.id, 1); } else { alert("Please make a valid selection."); }
+    };
+    
     window.updateProductPage_universal = (baseId) => {
         const productData = allBaseProducts.find(p => p.base_id === baseId); if (!productData) return;
         const priceDisplay = document.querySelector(`[data-base-id="${baseId}"] .price-display`);
@@ -44,28 +92,61 @@
             if (variant) { if (priceDisplay) priceDisplay.textContent = formatPrice(variant.price); if (titleEl) titleEl.textContent = variant.name; if (imageEl && variant.image && imageEl.src !== variant.image) { imageEl.style.opacity = 0; setTimeout(() => { imageEl.src = variant.image; imageEl.style.opacity = 1; }, 300); } }
         }
     };
+
     const renderProduct = (product) => {
         let optionsHTML = '';
         if (product.options_config) {
             product.options_config.forEach((opt, i) => { optionsHTML += `<fieldset class="option-group ${i > 0 ? 'hidden-options' : ''}" id="${opt.name.toLowerCase()}-group"><legend>${opt.label}</legend>`; if (i === 0) { optionsHTML += Object.keys(product.options).sort().map(o => `<input type="radio" id="${opt.name.toLowerCase()}_${o.replace(/\s+/g, '-')}" name="${opt.name.toLowerCase()}" value="${o}" onclick="updateProductPage_universal('${product.base_id}')"><label class="option-label" for="${opt.name.toLowerCase()}_${o.replace(/\s+/g, '-')}">${o}</label>`).join(''); } optionsHTML += `</fieldset>`; });
-        } else if (product.variants) { optionsHTML = `<fieldset class="option-group"><legend>${product.option_name || 'Option'}:</legend>${product.variants.map((v, index) => `<input type="radio" id="var_${v.id}" name="variant_${product.base_id}" value="${v.id}" onchange="updateProductPage_universal('${product.base_id}')" ${index === 0 ? 'checked' : ''}><label class="option-label" for="var_${v.id}">${v.option_label || v.name}</label>`).join('')}</fieldset>`; }
+        } else if (product.variants) {
+            optionsHTML = `<fieldset class="option-group"><legend>${product.option_name || 'Option'}:</legend>${product.variants.map((v, index) => `<input type="radio" id="var_${v.id}" name="variant_${product.base_id}" value="${v.id}" onchange="updateProductPage_universal('${product.base_id}')" ${index === 0 ? 'checked' : ''}><label class="option-label" for="var_${v.id}">${v.option_label || v.name}</label>`).join('')}</fieldset>`;
+        }
         container.innerHTML = `<div class="product-page-container" data-base-id="${product.base_id}"><div id="product-image-container"><img src="${product.base_image}" alt="${product.base_name}"></div><div class="product-details"><h1>${product.base_name}</h1><div class="price-display">---</div><p class="description">${product.description}</p><div class="options-container">${optionsHTML}</div><div class="button-wrapper"><div class="buynow-container"><a href="javascript:void(0);" onclick="addSelectedVariantToCart_universal()" class="buynow-button"><span class="buynow-text">Add to Cart</span></a></div><div class="buynow-container"><a href="javascript:void(0);" onclick="typeof openCartModal === 'function' ? openCartModal() : alert('Cart not loaded.')" class="buynow-button"><span class="buynow-text">View Cart</span></a></div></div></div></div>`;
         updateProductPage_universal(product.base_id);
     };
+
     async function initializePage() {
-        if (!container) return; container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">1/3: Initializing...</p>`;
+        if (!container) return; 
+        container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">1/5: Initializing...</p>`;
         try {
-            container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">2/3: Fetching product catalog...</p>`;
-            const digitalPromise = fetch(`${DIGITAL_PRODUCTS_URL}?t=${new Date().getTime()}`).then(res => res.ok ? res.json() : []);
-            const physicalPromise = fetch(`${PHYSICAL_PRODUCTS_URL}?t=${new Date().getTime()}`).then(res => res.ok ? res.json() : []);
-            const [digitalProducts, physicalProducts] = await Promise.all([digitalPromise, physicalPromise]);
+            container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">2/5: Fetching digital products...</p>`;
+            const digitalResponse = await fetch(`${DIGITAL_PRODUCTS_URL}?t=${new Date().getTime()}`); if (!digitalResponse.ok) throw new Error(`Digital Products fetch failed (Status: ${digitalResponse.status})`); const digitalProducts = await digitalResponse.json();
+            container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">3/5: Fetching physical products...</p>`;
+            let physicalProducts = [];
+            try {
+                const masterResponse = await fetch(`${PHYSICAL_PRODUCTS_MASTER_URL}?t=${new Date().getTime()}`);
+                if (masterResponse.ok) {
+                    const masterData = await masterResponse.json();
+                    if (masterData && masterData.categories && Array.isArray(masterData.categories)) {
+                        const categoryPromises = masterData.categories.map(category => fetch(`${category.url}?t=${new Date().getTime()}`).then(res => res.ok ? res.json() : Promise.reject(new Error(`Failed to fetch category file: ${category.name}`))));
+                        const categoryResults = await Promise.all(categoryPromises);
+                        const productUrlArrays = categoryResults.map(cat => (cat.products || []).map(p => p.url));
+                        const allProductUrls = productUrlArrays.flat();
+                        const productPromises = allProductUrls.map(url => fetch(`${url}?t=${new Date().getTime()}`).then(res => res.ok ? res.json() : Promise.reject(new Error(`Failed to fetch product file: ${url}`))));
+                        physicalProducts = await Promise.all(productPromises);
+                    }
+                }
+            } catch (error) { console.warn(`Could not process physical products:`, error); }
             allBaseProducts = [...digitalProducts, ...physicalProducts];
-            if (allBaseProducts.length === 0) throw new Error("Both digital and physical product files failed to load or are empty.");
-            container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">3/3: Finding product...</p>`;
+            container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">4/5: Finding product in catalog...</p>`;
             const pageHash = window.location.hash.substring(1).toLowerCase().replace(/-/g, ''); if (!pageHash) return renderDiagnostic("PAGE LINK NOT SET.<br>Set this section's 'On-page link' in Carrd (e.g., '#digitalart').");
             const productIdToLoad = pageMapping[pageHash] || pageHash; const productToDisplay = allBaseProducts.find(p => p && p.base_id && p.base_id.toLowerCase() === productIdToLoad);
+            container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">5/5: Building page...</p>`;
             if (productToDisplay) { renderProduct(productToDisplay); } else { renderDiagnostic(`PRODUCT NOT FOUND.<br>Could not find product with base_id: "${productIdToLoad}" (mapped from '#${pageHash}').`); }
-        } catch (error) { renderDiagnostic(`CRITICAL ERROR: ${error.message}<br>Check your JSON file URLs and ensure your GitHub repo is public.`); } finally { window.dispatchEvent(new Event('fixed_elements_update')); }
+        } catch (error) {
+            renderDiagnostic(`CRITICAL ERROR: ${error.message}<br>Check your JSON file URLs and ensure your GitHub repo is public.`);
+        } finally {
+            positionWrapper(); // This ensures the final content (or error) is positioned correctly.
+        }
     }
-    if (typeof window.hasInitializedProductPage === 'undefined') { window.hasInitializedProductPage = true; window.addEventListener('hashchange', () => setTimeout(initializePage, 50)); initializePage(); }
+    
+    // THE FIX: Listen for your universal tagger's event to re-position the wrapper.
+    window.addEventListener('fixed_elements_update', () => setTimeout(positionWrapper, 50));
+    window.addEventListener('hashchange', () => setTimeout(initializePage, 50));
+    
+    // Another critical fix: wait for the DOM to be fully ready before trying to find elements.
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializePage);
+    } else {
+        initializePage(); // DOM is already ready
+    }
 })();
