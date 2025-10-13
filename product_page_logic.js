@@ -1,11 +1,9 @@
 // FINAL, MINIMALIST, AND GUARANTEED TO WORK product_page_logic.js
 
 (function() {
-    // --- 1. CONFIGURATION (URLs and Mapping) ---
-const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
 
-const DIGITAL_PRODUCTS_URL = CORS_PROXY + `https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/digital_products_heirarchy.json`;
-const PHYSICAL_PRODUCTS_MASTER_URL = CORS_PROXY + `https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/physical_products.json`;
+const DIGITAL_PRODUCTS_URL = `https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/digital_products_heirarchy.json`;
+const PHYSICAL_PRODUCTS_MASTER_URL = `https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/physical_products.json`;
     
     // Maps the Carrd link hash to the product's base_id
     const pageMapping = { 
