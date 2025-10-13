@@ -1,4 +1,4 @@
-// FINAL, COMPLETE, ROBUST product_page_logic.js - Built for 3-Level Modular Loading
+// FINAL, COMPLETE, ROBUST product_page_logic.js
 
 function initializeProductPage() {
     const DIGITAL_PRODUCTS_URL = `https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/digital_products_heirarchy.json`;
@@ -6,32 +6,10 @@ function initializeProductPage() {
     const container = document.getElementById('single-product-container');
     const wrapper = document.getElementById('single-product-wrapper');
     let allBaseProducts = [];
-
-    const pageMapping = {
-        'digitalart': 'artcommission', 'animation': 'animationcommission', 'vtubermodeling': 'vtubercommission',
-        'videoediting': 'videoediting', 'streamkit': 'streamkit', 'logodesign': 'logodesign', 'webdesign': 'webdesign',
-        'physicalworks': 'cruxbrandshirt', 'cruxbrandshirt': 'cruxbrandshirt'
-    };
-
+    const pageMapping = { 'digitalart': 'artcommission', 'animation': 'animationcommission', 'vtubermodeling': 'vtubercommission', 'videoediting': 'videoediting', 'streamkit': 'streamkit', 'logodesign': 'logodesign', 'webdesign': 'webdesign', 'physicalworks': 'cruxbrandshirt', 'cruxbrandshirt': 'cruxbrandshirt' };
     const formatPrice = (price) => (price / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
-    
-    const renderDiagnostic = (message) => {
-        if (container) {
-            container.innerHTML = `<div class="diagnostic-output" style="opacity: 1; transform: none;">--- DIAGNOSTIC ---<br><br>${message}</div>`;
-            window.dispatchEvent(new Event('fixed_elements_update'));
-        }
-    };
-
-    const positionWrapper = () => {
-        if (!wrapper) return;
-        let topOffset = 0;
-        document.querySelectorAll('[data-fixed-element]').forEach(el => {
-            if (el !== wrapper && !el.classList.contains('hidden')) {
-                topOffset += el.offsetHeight;
-            }
-        });
-        wrapper.style.marginTop = `${topOffset}px`;
-    };
+    const renderDiagnostic = (message) => { if(container) { container.innerHTML = `<div class="diagnostic-output" style="opacity: 1; transform: none;">--- DIAGNOSTIC ---<br><br>${message}</div>`; window.dispatchEvent(new Event('fixed_elements_update')); } };
+    const positionWrapper = () => { if (!wrapper) return; let topOffset = 0; document.querySelectorAll('[data-fixed-element]').forEach(el => { if (el !== wrapper && !el.classList.contains('hidden')) topOffset += el.offsetHeight; }); wrapper.style.marginTop = `${topOffset}px`; };
 
     window.addSelectedVariantToCart_universal = () => {
         if (typeof window.addToCart !== 'function') return alert("Error: Main cart system not found.");
@@ -45,24 +23,18 @@ function initializeProductPage() {
             const selections = productData.options_config.map(opt => document.querySelector(`input[name="${opt.name.toLowerCase()}"]:checked`)?.value);
             if (selections.some(s => !s)) return alert("Please select all options.");
             let currentLevel = productData.options;
-            for (const selection of selections) {
-                currentLevel = currentLevel?.[selection]?.variants || currentLevel?.[selection];
-            }
+            for (const selection of selections) { currentLevel = currentLevel?.[selection]?.variants || currentLevel?.[selection]; }
             finalVariant = currentLevel;
         } else {
             const selectedRadio = document.querySelector(`input[name="variant_${baseId}"]:checked`);
             if (selectedRadio) finalVariant = productData.variants.find(v => v.id === parseInt(selectedRadio.value));
         }
-        if (finalVariant && finalVariant.id) {
-            window.addToCart(finalVariant.id, 1);
-        } else {
-            alert("Please make a valid selection.");
-        }
+        if (finalVariant && finalVariant.id) { window.addToCart(finalVariant.id, 1); }
+        else { alert("Please make a valid selection."); }
     };
     
     window.updateProductPage_universal = (baseId) => {
-        const productData = allBaseProducts.find(p => p.base_id === baseId);
-        if (!productData) return;
+        const productData = allBaseProducts.find(p => p.base_id === baseId); if (!productData) return;
         const priceDisplay = document.querySelector(`[data-base-id="${baseId}"] .price-display`);
         const titleEl = document.querySelector(`[data-base-id="${baseId}"] h1`);
         const imageEl = document.getElementById('product-image-container')?.querySelector('img');
@@ -76,39 +48,31 @@ function initializeProductPage() {
                     setTimeout(() => { imageEl.src = productData.options[selectedColor].image; imageEl.style.opacity = 1; }, 300);
                 }
             } else if (imageEl && imageEl.src !== productData.base_image) {
-                if(imageEl.src) { imageEl.style.opacity = 0; setTimeout(() => { imageEl.src = productData.base_image; imageEl.style.opacity = 1; }, 300); }
-                else { imageEl.src = productData.base_image; }
+                 if(imageEl.src) { imageEl.style.opacity = 0; setTimeout(() => { imageEl.src = productData.base_image; imageEl.style.opacity = 1; }, 300); } else { imageEl.src = productData.base_image; }
             }
             for (let i = 1; i < config.length; i++) {
                 const prevSelection = selections[i - 1];
-                const currentGroup = document.getElementById(`${config[i].name.toLowerCase()}-group`);
-                if (!currentGroup) continue;
+                const currentGroup = document.getElementById(`${config[i].name.toLowerCase()}-group`); if (!currentGroup) continue;
                 currentGroup.innerHTML = `<legend>${config[i].label}</legend>`;
                 if (!prevSelection) { currentGroup.classList.add('hidden-options'); }
                 else {
                     let path = productData.options[prevSelection]?.variants;
                     if (path && Object.keys(path).length > 0) {
-                        const nextOptions = Object.keys(path).sort();
-                        let html = `<legend>${config[i].label}</legend>`;
+                        const nextOptions = Object.keys(path).sort(); let html = `<legend>${config[i].label}</legend>`;
                         html += nextOptions.map(opt => `<input type="radio" id="${config[i].name.toLowerCase()}_${opt.replace(/\s+/g, '-')}" name="${config[i].name.toLowerCase()}" value="${opt}" onclick="updateProductPage_universal('${baseId}')"><label class="option-label" for="${config[i].name.toLowerCase()}_${opt.replace(/\s+/g, '-')}">${opt}</label>`).join('');
-                        currentGroup.innerHTML = html;
-                        currentGroup.classList.remove('hidden-options');
+                        currentGroup.innerHTML = html; currentGroup.classList.remove('hidden-options');
                     } else { currentGroup.classList.add('hidden-options'); }
                 }
             }
             let finalVariant, currentPath = productData.options, titleParts = [];
             for (const [index, selection] of selections.entries()) {
-                if (selection) {
-                    titleParts.push(selection);
-                    currentPath = (index < selections.length - 1) ? currentPath?.[selection]?.variants : currentPath?.[selection];
-                }
+                if (selection) { titleParts.push(selection); currentPath = (index < selections.length - 1) ? currentPath?.[selection]?.variants : currentPath?.[selection]; }
             }
             finalVariant = currentPath?.id ? currentPath : null;
             if (titleEl) titleEl.textContent = titleParts.length > 0 ? `${productData.base_name} (${titleParts.join(' / ')})` : productData.base_name;
             if (priceDisplay) priceDisplay.textContent = finalVariant ? formatPrice(finalVariant.price) : '---';
         } else {
-            const selectedRadio = document.querySelector(`input[name="variant_${baseId}"]:checked`);
-            if (!selectedRadio) return;
+            const selectedRadio = document.querySelector(`input[name="variant_${baseId}"]:checked`); if (!selectedRadio) return;
             const variant = productData.variants.find(v => v.id === parseInt(selectedRadio.value));
             if (variant) {
                 if (priceDisplay) priceDisplay.textContent = formatPrice(variant.price);
@@ -134,7 +98,7 @@ function initializeProductPage() {
     };
 
     async function initializePage() {
-        if (!container) return;
+        if (!container) { console.error("CRITICAL: #single-product-container not found in DOM."); return; }
         container.innerHTML = `<p style="color:#ccc;font-family:monospace;text-align:center;padding:3rem 0;">1/5: Initializing...</p>`;
         positionWrapper();
         try {
@@ -185,6 +149,7 @@ function initializeProductPage() {
     }
 }
 
+// Initial call
 if (typeof window.hasInitializedProductPage === 'undefined') {
     document.addEventListener('DOMContentLoaded', initializeProductPage);
 }
