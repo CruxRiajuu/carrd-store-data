@@ -1,4 +1,4 @@
-// This is the entire content of product_page_logic.js
+// This is the entire content of product_page_logic.js (FINAL, CORRECTED VERSION)
 
 function initializeProductPage() {
     const DIGITAL_PRODUCTS_URL = `https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/digital_products_heirarchy.json`;
@@ -10,8 +10,15 @@ function initializeProductPage() {
     const pageMapping = { 'digitalart': 'artcommission', 'animation': 'animationcommission', 'vtubermodeling': 'vtubercommission', 'videoediting': 'videoediting', 'streamkit': 'streamkit', 'logodesign': 'logodesign', 'webdesign': 'webdesign', 'physicalworks': 'cruxbrandshirt', 'cruxbrandshirt': 'cruxbrandshirt' };
 
     const formatPrice = (price) => (price / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
-    const renderDiagnostic = (message) => { if(container) container.innerHTML = `<div class="diagnostic-output">--- DIAGNOSTIC ---<br>${message}</div>`; };
-    const positionWrapper = () => { if (!wrapper) return; let topOffset = 0; document.querySelectorAll('[data-fixed-element]').forEach(el => { if (el !== wrapper && !el.classList.contains('hidden')) topOffset += el.offsetHeight; }); wrapper.style.marginTop = `${topOffset}px`; };
+    
+    const renderDiagnostic = (message) => {
+        if(container) container.innerHTML = `<div class="diagnostic-output">--- DIAGNOSTIC ---<br>${message}</div>`;
+        // THE FIX: Tell the Universal Tagger to update the layout even if there's an error
+        window.dispatchEvent(new Event('fixed_elements_update'));
+    };
+    
+    // This function is no longer needed here, as the Universal Tagger will handle all positioning.
+    // const positionWrapper = () => { ... };
 
     window.addSelectedVariantToCart_universal = () => {
         if (typeof window.addToCart !== 'function') return alert("Error: Main cart system not found.");
@@ -112,60 +119,50 @@ function initializeProductPage() {
         updateProductPage_universal(product.base_id);
     };
 
-    async function fetchAllProducts() {
-        const digitalResponse = await fetch(DIGITAL_PRODUCTS_URL + '?t=' + new Date().getTime());
-        if (!digitalResponse.ok) throw new Error(`Digital Products fetch failed (Status: ${digitalResponse.status})`);
-        const digitalProducts = await digitalResponse.json();
-
-        let physicalProducts = [];
-        try {
-            const masterResponse = await fetch(PHYSICAL_PRODUCTS_MASTER_URL + '?t=' + new Date().getTime());
-            if (masterResponse.ok) {
-                const masterData = await masterResponse.json();
-                if (masterData.categories && Array.isArray(masterData.categories)) {
-                    const categoryPromises = masterData.categories.map(category => fetch(category.url + '?t=' + new Date().getTime()).then(res => res.ok ? res.json() : Promise.reject(new Error(`Failed to fetch category file: ${category.name}`))));
-                    const categoryResults = await Promise.all(categoryPromises);
-                    const productUrlArrays = categoryResults.map(cat => (cat.products || []).map(p => p.url));
-                    const allProductUrls = productUrlArrays.flat();
-                    const productPromises = allProductUrls.map(url => fetch(url + '?t=' + new Date().getTime()).then(res => res.ok ? res.json() : Promise.reject(new Error(`Failed to fetch product file: ${url}`))));
-                    physicalProducts = await Promise.all(productPromises);
-                }
-            }
-        } catch (error) { console.warn(`Could not process physical products:`, error); }
-        
-        return [...digitalProducts, ...physicalProducts];
-    }
-
-    async function displayProduct() {
+    async function initializePage() {
         if (!container) return;
-        container.innerHTML = `<p style="color: #ccc; font-family: monospace; text-align: center; padding: 3rem 0;">Loading Product...</p>`;
-        positionWrapper();
-
-        if (allBaseProducts.length === 0) {
+        container.innerHTML = `<p style="color: #ccc; font-family: monospace; text-align: center; padding: 3rem 0;">Initializing...</p>`;
+        // Don't position yet, wait for content
+        try {
+            const digitalResponse = await fetch(DIGITAL_PRODUCTS_URL + '?t=' + new Date().getTime());
+            if (!digitalResponse.ok) throw new Error(`Digital Products fetch failed (Status: ${digitalResponse.status})`);
+            const digitalProducts = await digitalResponse.json();
+            
+            let physicalProducts = [];
             try {
-                allBaseProducts = await fetchAllProducts();
-            } catch (error) {
-                renderDiagnostic(`CRITICAL ERROR: ${error.message}<br>Check your JSON file URLs and ensure your GitHub repo is public.`);
-                return;
-            }
+                const masterResponse = await fetch(PHYSICAL_PRODUCTS_MASTER_URL + '?t=' + new Date().getTime());
+                if (masterResponse.ok) {
+                    const masterData = await masterResponse.json();
+                    if (masterData.categories && Array.isArray(masterData.categories)) {
+                        const categoryPromises = masterData.categories.map(category => fetch(category.url + '?t=' + new Date().getTime()).then(res => res.ok ? res.json() : Promise.reject(new Error(`Failed to fetch category file: ${category.name}`))));
+                        const categoryResults = await Promise.all(categoryPromises);
+                        const productUrlArrays = categoryResults.map(cat => (cat.products || []).map(p => p.url));
+                        const allProductUrls = productUrlArrays.flat();
+                        const productPromises = allProductUrls.map(url => fetch(url + '?t=' + new Date().getTime()).then(res => res.ok ? res.json() : Promise.reject(new Error(`Failed to fetch product file: ${url}`))));
+                        physicalProducts = await Promise.all(productPromises);
+                    }
+                }
+            } catch (error) { console.warn(`Could not process physical products:`, error); }
+            
+            allBaseProducts = [...digitalProducts, ...physicalProducts];
+            
+            const pageHash = window.location.hash.substring(1).toLowerCase().replace(/-/g, '');
+            if (!pageHash) return renderDiagnostic("PAGE LINK NOT SET.<br>Set this section's 'On-page link' in Carrd (e.g., '#digitalart').");
+            
+            const productIdToLoad = pageMapping[pageHash] || pageHash;
+            const productToDisplay = allBaseProducts.find(p => p && p.base_id && p.base_id.toLowerCase() === productIdToLoad);
+
+            if (productToDisplay) { renderProduct(productToDisplay); }
+            else { renderDiagnostic(`PRODUCT NOT FOUND.<br>Could not find product with base_id: "${productIdToLoad}" (mapped from '#${pageHash}').`); }
+        } catch (error) {
+            renderDiagnostic(`CRITICAL ERROR: ${error.message}<br>Check your JSON file URLs and ensure your GitHub repo is public.`);
+        } finally {
+            // THE FIX: Tell the Universal Tagger that new content has been added and it needs to recalculate the layout.
+            window.dispatchEvent(new Event('fixed_elements_update'));
         }
-        
-        const pageHash = window.location.hash.substring(1).toLowerCase().replace(/-/g, '');
-        if (!pageHash) return renderDiagnostic("PAGE LINK NOT SET.<br>Set this section's 'On-page link' in Carrd (e.g., '#digitalart').");
-        
-        const productIdToLoad = pageMapping[pageHash] || pageHash;
-        const productToDisplay = allBaseProducts.find(p => p && p.base_id && p.base_id.toLowerCase() === productIdToLoad);
-
-        if (productToDisplay) { renderProduct(productToDisplay); }
-        else { renderDiagnostic(`PRODUCT NOT FOUND.<br>Could not find product with base_id: "${productIdToLoad}" (mapped from '#${pageHash}').`); }
-
-        positionWrapper();
     }
 
-    window.addEventListener('fixed_elements_update', () => setTimeout(positionWrapper, 50));
-    window.addEventListener('hashchange', () => setTimeout(displayProduct, 50));
-    displayProduct();
-}
-
-initializeProductPage();
+    window.addEventListener('hashchange', () => setTimeout(initializePage, 50));
+    initializePage();
+});
 </script>
