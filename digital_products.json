@@ -101,4 +101,3 @@
     { "id": 100, "name": "Webdesign // E-Commerce Advanced", "price": 500000, "image": "", "stripe_price_id": "price_1SAl5vIaRpVk2G5NqwNvLwT6", "type": "digital" },
     { "id": 101, "name": "Webdesign // E-Commerce Enterprise", "price": 1000000, "image": "", "stripe_price_id": "price_1SAl8mIaRpVk2G5NGh2GTPYf", "type": "digital" }
 ]
-"
