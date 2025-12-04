@@ -1,4 +1,4 @@
-/* --- 1. BUTTON STYLES (Underline Fixes) --- */
+/* --- 1. BUTTON STYLES --- */
 .buynow-container { display:inline-block; min-width:280px; text-align:center; }
 
 .buynow-button {
@@ -9,11 +9,8 @@
   border-top: none; border-bottom: none;
   height: 52px; display: flex; align-items: center; justify-content: center;
   box-shadow: 0 4px 12px rgba(0,0,0,.3); transition: all .3s; border-radius: 8px;
-  /* FIX: REMOVE UNDERLINES FOREVER */
-  text-decoration: none !important;
-  border-bottom: none !important; 
+  text-decoration: none !important; border-bottom: none !important; 
 }
-
 .buynow-button:hover { background: rgb(165,217,236); transform: translateY(-3px); }
 
 .buynow-text {
@@ -44,7 +41,6 @@
   font-size: 1.9rem; font-weight: 900; color: #fff; text-transform: uppercase;
   text-shadow: 0 0 20px rgba(0,255,255,.6); margin: 0;
 }
-.header-buttons { display: flex; gap: 10px; align-items: center; }
 
 /* FIX: Clear Cart Hover */
 #clear-cart-btn {
@@ -63,7 +59,23 @@
 
 #cart-content { transition: all .4s; }
 #checkout-mode #cart-items, #checkout-mode #empty-cart-message { display: none; }
-#checkout-mode #checkout-options { display: block !important; }
+
+/* --- CHECKOUT OPTIONS CONTAINER (Centers Everything) --- */
+#checkout-options { 
+  display: none; 
+  margin-top: 1rem; 
+  width: 100%;
+}
+/* This class is toggled by JS to enable Flexbox centering */
+.checkout-flex-active {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 15px;
+}
+
+#paypal-button-container { width: 100%; }
 
 /* --- CENTER BACK BUTTON FIX --- */
 #back-to-cart-btn {
@@ -79,13 +91,10 @@
   cursor: pointer; 
   transition: .2s; 
   text-decoration: none !important;
-  /* Centering Logic */
-  margin: 20px auto 0 auto; 
-  width: fit-content;
+  width: fit-content; /* Stops it from stretching */
 }
 
-#checkout-mode #back-to-cart-btn { display: block; }
-
+#checkout-mode #back-to-cart-btn { display: inline-block; }
 #back-to-cart-btn:hover { background: #00eaff; color: #000; }
 
 #cart-items { padding: 0 .8rem .8rem; max-height: 52vh; overflow-y: auto; }
@@ -112,13 +121,9 @@
 .quantity-btn:hover { background: rgba(0,234,255,.2); color: white; }
 .quantity-display { background: rgba(0,0,0,.6); color: white; padding: 0 8px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9rem; min-width: 36px; }
 
-/* FIX: TRASH ICON BEVEL REMOVAL */
 .cart-item-remove {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  color: #ccc; cursor: pointer; padding: 4px; transition: .3s;
-  appearance: none; -webkit-appearance: none;
+  background: transparent !important; border: none !important; box-shadow: none !important;
+  color: #ccc; cursor: pointer; padding: 4px; transition: .3s; appearance: none;
 }
 .cart-item-remove:hover { color: #ff6b6b; transform: scale(1.2); }
 .cart-item-remove svg { width: 16px; height: 16px; fill: currentColor; stroke: none; border: none; }
@@ -137,20 +142,6 @@
   text-decoration: none !important;
 }
 #checkout-trigger:hover { transform: translateY(-4px); box-shadow: 0 15px 40px rgba(0,234,255,.6); }
-
-#checkout-options { display: none; margin-top: 1rem; }
-.payment-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 100%; height: 56px; margin: 12px 0; background: #000;
-  border: 1.4px solid rgba(0,255,255,.4); border-radius: 14px;
-  cursor: pointer; transition: all .3s; position: relative; overflow: hidden;
-  text-decoration: none !important;
-}
-.payment-btn:hover { transform: translateY(-4px); border-color: #00eaff; box-shadow: 0 15px 40px rgba(0,234,255,.5); }
-.payment-btn img { height: 36px; filter: brightness(0) invert(1); }
-.payment-btn .spinner { display: none; position: absolute; width: 24px; height: 24px; border: 3px solid #0ff; border-top: 3px solid transparent; border-radius: 50%; animation: s 1s linear infinite; }
-.payment-btn.loading .spinner { display: block; }
-@keyframes s { to { transform: rotate(360deg); } }
 
 .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999999999; display: flex; flex-direction: column; gap: 12px; align-items: flex-end; }
 .toast-notification { background: rgba(0,0,0,.9); color: white; padding: 1.2rem 2rem; border-radius: 16px; border: 2px solid transparent; font-weight: 700; text-transform: uppercase; min-width: 280px; text-align: center; opacity: 0; transform: translateY(20px) scale(.95); transition: all .4s; box-shadow: 0 15px 40px rgba(0,0,0,.6); }
