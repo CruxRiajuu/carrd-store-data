@@ -86,8 +86,9 @@ function renderPayPalButton(){
             let catLabel = item.category ? item.category.replace(/-/g, ' ').toUpperCase() : "DIGITAL ITEM";
             
             return {
-                name: item.name,        // e.g. "Chibi Portrait // Messy Scribble"
-                description: catLabel,  // e.g. "DIGITAL ART"
+                // --- FIX: Merge Category into Name for Guest Checkout Visibility ---
+                name: `${item.name} - [${catLabel}]`,
+                
                 unit_amount: {
                     currency_code: "USD",
                     value: (item.price / 100).toFixed(2) // Convert cents to dollars
