@@ -2,7 +2,7 @@ const STRIPE_KEY="pk_live_51OHfwcIaRpVk2G5N78UiDGdQLFzmUh1dv6bbA0D4N4I5bK2n7mPru
 const PRODUCTS_URL="https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/digital_products.json";
 let stripeInst, cart=[], products=[];
 
-// Element selectors are run immediately because the Loader ensures HTML exists
+// Element selectors
 const modal=document.getElementById("cart-modal");
 const itemsContainer=document.getElementById("cart-items");
 const totalEl=document.getElementById("cart-total");
@@ -36,7 +36,7 @@ function updateTotal(){totalEl.textContent=formatPrice(cart.reduce((s,i)=>s+i.pr
 
 function renderCart(){
   itemsContainer.innerHTML=""; updateTotal();
-  if(cart.length===0){emptyMsg.classList.add("show");checkoutBtn.style.display="none";return}
+  if(cart.length===0){emptyMsg.classList.add("show");checkoutBtn.style.display="none";return; }
   emptyMsg.classList.remove("show");checkoutBtn.style.display="block";
   cart.forEach(item=>{
     const div=document.createElement("div");div.className="cart-item";
@@ -70,27 +70,32 @@ function renderPayPalButton(){
   
   try {
     paypal.Buttons({
-      // FIX 1: Only show PayPal (No Credit Card form)
+      // 1. Force Only PayPal (No Cards)
       fundingSource: paypal.FUNDING.PAYPAL,
       
-      // FIX 2: Black Button (Monochromatic)
+      // 2. Black/Monochrome Style
       style:{layout:"vertical", color:"black", shape:"rect", label:"pay", height:40},
       
       createOrder:(data,actions)=>{
         const totalCents = cart.reduce((s,i)=>s+i.price*i.quantity,0);
         const totalStr = (totalCents/100).toFixed(2);
         
-        // FIX 3: Breakdown Items for PayPal Receipt
-        const paypalItems = cart.map(item => ({
-            name: item.name,
-            description: "Digital Art", // Fallback description
-            unit_amount: {
-                currency_code: "USD",
-                value: (item.price / 100).toFixed(2)
-            },
-            quantity: String(item.quantity),
-            category: "DIGITAL_GOODS"
-        }));
+        // 3. Dynamic Item Mapping from JSON
+        const paypalItems = cart.map(item => {
+            // Format Category: "digital-art" -> "DIGITAL ART"
+            let catLabel = item.category ? item.category.replace(/-/g, ' ').toUpperCase() : "DIGITAL ITEM";
+            
+            return {
+                name: item.name,        // e.g. "Chibi Portrait // Messy Scribble"
+                description: catLabel,  // e.g. "DIGITAL ART"
+                unit_amount: {
+                    currency_code: "USD",
+                    value: (item.price / 100).toFixed(2) // Convert cents to dollars
+                },
+                quantity: String(item.quantity),
+                category: "DIGITAL_GOODS"
+            };
+        });
 
         return actions.order.create({
             purchase_units:[{
@@ -101,7 +106,7 @@ function renderPayPalButton(){
                         item_total: { currency_code: "USD", value: totalStr }
                     }
                 },
-                items: paypalItems // Passes the list to PayPal
+                items: paypalItems 
             }]
         })
       },
@@ -125,8 +130,5 @@ async function init(){
   loadCart();renderCart()
 }
 
-// Listen for clicks on the modal background
 modal.addEventListener("click",e=>{if(e.target===modal)closeCartModal()});
-
-// Start init
 init();
