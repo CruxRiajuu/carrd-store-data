@@ -65,17 +65,25 @@
 #checkout-mode #cart-items, #checkout-mode #empty-cart-message { display: none; }
 #checkout-mode #checkout-options { display: block !important; }
 
+/* --- CENTER BACK BUTTON FIX --- */
 #back-to-cart-btn {
-  display: none; background: none; color: #00eaff;
-  border: 1.4px solid #00eaff; border-radius: 8px;
-  padding: 8px 20px; font-size: .8rem; font-weight: 900;
-  text-transform: uppercase; cursor: pointer; transition: .2s; margin-top: 20px;
+  display: none; 
+  background: none; 
+  color: #00eaff;
+  border: 1.4px solid #00eaff; 
+  border-radius: 8px;
+  padding: 10px 24px; 
+  font-size: .9rem; 
+  font-weight: 900;
+  text-transform: uppercase; 
+  cursor: pointer; 
+  transition: .2s; 
   text-decoration: none !important;
-  /* CENTERING FIX */
-  margin-left: auto; margin-right: auto; width: fit-content;
+  /* Centering Logic */
+  margin: 20px auto 0 auto; 
+  width: fit-content;
 }
 
-/* CHANGE TO DISPLAY BLOCK SO MARGIN AUTO WORKS */
 #checkout-mode #back-to-cart-btn { display: block; }
 
 #back-to-cart-btn:hover { background: #00eaff; color: #000; }
