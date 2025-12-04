@@ -2,7 +2,6 @@ const STRIPE_KEY="pk_live_51OHfwcIaRpVk2G5N78UiDGdQLFzmUh1dv6bbA0D4N4I5bK2n7mPru
 const PRODUCTS_URL="https://raw.githubusercontent.com/CruxRiajuu/carrd-store-data/main/digital_products.json";
 let stripeInst, cart=[], products=[];
 
-// Element selectors
 const modal=document.getElementById("cart-modal");
 const itemsContainer=document.getElementById("cart-items");
 const totalEl=document.getElementById("cart-total");
@@ -13,12 +12,34 @@ const checkoutOpts=document.getElementById("checkout-options");
 const toastBox=document.getElementById("toast-container");
 
 window.openCartModal=()=>{renderCart();modal.classList.add("open");document.body.style.overflow="hidden"}
-window.closeCartModal=()=>{modal.classList.remove("open");contentDiv.removeAttribute("id");checkoutOpts.style.display="none";checkoutBtn.style.display=cart.length?"block":"none";setTimeout(()=>{document.body.style.overflow=""},500)}
+window.closeCartModal=()=>{
+  modal.classList.remove("open");
+  contentDiv.removeAttribute("id");
+  // FIX: Use Class Toggle for Flex/None
+  checkoutOpts.classList.remove("checkout-flex-active"); 
+  checkoutOpts.style.display="none"; 
+  checkoutBtn.style.display=cart.length?"block":"none";
+  setTimeout(()=>{document.body.style.overflow=""},500)
+}
 window.showClearConfirm=()=>{document.getElementById("clear-confirm-overlay").classList.add("show")}
 window.confirmClearCart=()=>{document.getElementById("clear-confirm-overlay").classList.remove("show");cart=[];saveCart();renderCart();showToast("Cart cleared!","cleared")}
 
-window.enterCheckoutMode=()=>{contentDiv.id="checkout-mode";checkoutBtn.style.display="none";renderPayPalButton()}
-window.backToCart=()=>{contentDiv.removeAttribute("id");checkoutBtn.style.display=cart.length?"block":"none"}
+window.enterCheckoutMode=()=>{
+  contentDiv.id="checkout-mode";
+  checkoutBtn.style.display="none";
+  
+  // FIX: Activate Flex centering class
+  checkoutOpts.style.display="none"; // clear block
+  checkoutOpts.classList.add("checkout-flex-active");
+  
+  renderPayPalButton();
+}
+window.backToCart=()=>{
+  contentDiv.removeAttribute("id");
+  checkoutOpts.classList.remove("checkout-flex-active");
+  checkoutOpts.style.display="none";
+  checkoutBtn.style.display=cart.length?"block":"none"
+}
 
 window.addToCart=(id,qty=1)=>{
   if(!products.length) return alert("Loading...");
@@ -66,37 +87,52 @@ window.goToCheckout=async()=>{
 
 function renderPayPalButton(){
   const container = document.getElementById("paypal-button-container");
-  if(!window.paypal || container.innerHTML.trim() !== "") return;
+  if(!window.paypal) return;
+  // Clear container to prevent duplicate buttons
+  container.innerHTML = ""; 
   
   try {
     paypal.Buttons({
-      // 1. Force Only PayPal (No Cards)
+      // FIX 1: FILTER ONLY PAYPAL (Removes PayLater/Card buttons)
       fundingSource: paypal.FUNDING.PAYPAL,
       
-      // 2. Black/Monochrome Style
-      style:{layout:"vertical", color:"black", shape:"rect", label:"pay", height:40},
+      // FIX 2: Style (Horizontal prevents stacking of unwanted buttons)
+      style: {
+          layout: 'horizontal', 
+          color: 'black', 
+          shape: 'rect', 
+          label: 'pay', 
+          height: 40,
+          tagline: false 
+      },
       
       createOrder:(data,actions)=>{
-        const totalCents = cart.reduce((s,i)=>s+i.price*i.quantity,0);
-        const totalStr = (totalCents/100).toFixed(2);
+        // FIX 3: CALCULATE TOTAL *FROM ITEMS* to ensure perfect match
+        // This fixes the missing data in Guest Checkout
         
-        // 3. Dynamic Item Mapping from JSON
+        let calculatedTotal = 0;
+
         const paypalItems = cart.map(item => {
-            // Format Category: "digital-art" -> "DIGITAL ART"
-            let catLabel = item.category ? item.category.replace(/-/g, ' ').toUpperCase() : "DIGITAL ITEM";
+            // Merge Category into Name e.g. "[DIGITAL ART] Chibi Portrait"
+            let catLabel = item.category ? item.category.replace(/-/g, ' ').toUpperCase() : "ITEM";
+            let finalName = `[${catLabel}] ${item.name}`;
+            
+            // Truncate to 127 chars to prevent API errors
+            if(finalName.length > 127) finalName = finalName.substring(0, 124) + "...";
+            
+            const unitVal = (item.price / 100).toFixed(2);
+            calculatedTotal += parseFloat(unitVal) * item.quantity;
             
             return {
-                // --- FIX: Merge Category into Name for Guest Checkout Visibility ---
-                name: `${item.name} - [${catLabel}]`,
-                
-                unit_amount: {
-                    currency_code: "USD",
-                    value: (item.price / 100).toFixed(2) // Convert cents to dollars
-                },
+                name: finalName,
+                unit_amount: { currency_code: "USD", value: unitVal },
                 quantity: String(item.quantity),
                 category: "DIGITAL_GOODS"
             };
         });
+
+        // Use the SUM of the items as the total (prevents mismatch errors)
+        const totalStr = calculatedTotal.toFixed(2);
 
         return actions.order.create({
             purchase_units:[{
